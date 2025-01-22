@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"fmt"
+	"github.com/ethereum/go-ethereum/rlp"
 	"log"
 	"math/big"
 
@@ -14,7 +16,7 @@ import (
 )
 
 func main() {
-	client, err := ethclient.Dial("https://eth-mainnet.g.alchemy.com/v2/-7aGRi0VGwlTt2E23vh4lgdYub72N2KS")
+	client, err := ethclient.Dial("https://rinkeby.infura.io")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,7 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	value := big.NewInt(1000000000000000000) // in wei (1 eth)
+	value := big.NewInt(1000000000000000000) // in wei (初始化客户端 eth)
 	gasLimit := uint64(21000)                // in units
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
@@ -57,10 +59,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = client.SendTransaction(context.Background(), signedTx)
-	if err != nil {
-		log.Fatal(err)
-	}
+	ts := types.Transactions{signedTx}
+	//rawTxBytes := ts.GetRlp(0)
+	rawTxBytes, _ := rlp.EncodeToBytes(ts[0])
+	rawTxHex := hex.EncodeToString(rawTxBytes)
 
-	fmt.Printf("tx sent: %s", signedTx.Hash().Hex())
+	fmt.Printf(rawTxHex) // f86...772
 }
